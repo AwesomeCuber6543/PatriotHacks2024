@@ -22,19 +22,7 @@ from keras.models import model_from_json
 from keras.preprocessing.image import load_img
 import faulthandler
 faulthandler.enable()
-
-
 matplotlib.use('Agg')
-
-model = whisper.load_model('base')
-
-# Constants for audio recording
-FORMAT = sr.AudioData
-CHANNELS = 1
-RATE = 22000
-RECORD_SECONDS = 45  
-
-recognizer = sr.Recognizer()
 
 
 
@@ -54,16 +42,9 @@ face_locations = []
 face_encodings = []
 face_names = []
 known_face_encodings = []
-history = []
-keyWords = ['teamwork', "communication", "problem-solving", "adaptability", "leadership", "punctuality", "initiative", "detail-oriented", "collaboration", "creativity", "critical-thinking", "decision-making", "conflict-resolution", "customer-service", "multitasking", "echnical-skills", "organization", "Self-motivation", "flexibility", "goal-oriented", "learning", "networking", "Project-management", "customer-focus", "innovation", "analysis", "empathy", "work-ethic", "resourcefulness", "professionalism"]
-keyWordsHit = []
-fillerWordsUsed = 0
-count = 0
-interviewDone = False
-questionsForInterview = 1
+
 
 # openai.api_key = secretkey.SECRET_KEY
-conversation = [{"role": "system", "content": "You are an interviewer for a company. You will ask behavioural questions similar to What is your biggest flaw or why do you want to work here. The first message you will say is Hello my name is Prepper and I will be your interviewer. Make sure to ask the questions one at a time and wait for the response. Make it seem like a natural conversation. Make sure the questions do not get too technical and if they do and you believe you cannot continue anymore say Alright and ask another behavioral question make sure you ask follow up questions based on the answers. MAKE SURE you also try and make it super casual, like you are my friend. Maybe even throw in a few jokes or something. After you believe the interview has gotten to a good ending point then you will say ONLY the phrase: ok then thank you so much for your time and have a nice day"}]
 
 json_file = open("facialemotionmodel.json", "r")
 # json_file = open("fer.json", "r")
@@ -157,7 +138,6 @@ def runFullIris():
             if key ==ord("q"):
                 x = calcPercentage(eyePos, "center")
                 print("THE ACCURACY IS ", x , "%")
-                print(keyWordsHit)
                 break
     cap.release()
     cv.destroyAllWindows()
@@ -324,66 +304,6 @@ def encode_faces():
 
 
 
-@app.route('/GetContactPercentage', methods = ['POST', 'GET'])
-def getContactPercentage():
-    try:
-        return jsonify(float(round(calcPercentage(eyePos, "center"), 2))), 200
-    except:
-        return jsonify({'message': 'There was a problem getting the eye contact accuracy'}), 400
-    
-
-@app.route('/getKeyWordUsage', methods = ['GET'])
-def getKeyWordUsage():
-    try:
-
-        return jsonify(keyWordsHit), 200
-    except:
-        return jsonify({'message': 'There was a problem getting the key words used'}), 400
-    
-
-@app.route('/getFillerWordsUsed', methods = ['GET'])
-def getFillerWordUsage():
-    try:
-
-        return jsonify(fillerWordsUsed), 200
-    except:
-        return jsonify({'message': 'There was a problem getting the number of filler words used'}), 400
-
-
-
-    
-@app.route('/StartInterview', methods=['POST', 'GET'])
-def startInterview():
-    global conversation
-    global count
-    try:
-        eyePos.clear()
-        keyWordsHit.clear()
-        conversation = [{"role": "system", "content": "You are an interviewer for a company. ..."}]
-        count = 0
-        interview_start_event.set()  # Set the event to start the interview
-        print("Interview started")
-        return jsonify({'message': 'Interview was started'}), 200
-    except:
-        return jsonify({'message': 'There was a problem starting the interview'}), 400
-    
-@app.route('/EndInterview', methods=['POST', 'GET'])
-def endInterview():
-    global interviewDone
-    try:
-        interviewDone = True
-        return jsonify({'message': 'Interview was ended'}), 200
-    except:
-        return jsonify({'message': 'There was a problem ending the interview'}), 400
-
-@app.route('/isInterviewDone', methods = ['POST', 'GET'])
-def isInterviewDone():
-    try:
-        jsonify({'message': interviewDone}), 200
-    except:
-        return jsonify({'message': 'There was a problem getting the status of the interview'}), 400
-
-    
 @app.route('/start_test', methods=['POST'])
 def start_test():
     # try:
